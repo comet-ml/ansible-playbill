@@ -1,0 +1,3 @@
+[submodule ".version"]
+	path = .version
+	url = https://github.com/comet-ml/git-semver-compute.git

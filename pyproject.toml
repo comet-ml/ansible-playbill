@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "playbill"
+authors = [
+	{name = "Diego Fernando Carrión", email = "diegoc@comet.com"},
+]
+maintainers = [
+	{name = "Comet Deployment Team", email = "deployment-team@comet.com"},
+]
+description = "A library for invoking ansible playbook runs from withing python programs."
+requires-python = ">=3.6"
+keywords = ["ansible", "playbook", "automation"]
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+	"Intended Audience :: Developers",
+	"Operating System :: OS Independent",
+]
+dynamic = ["version"]
+dependencies = [
+	"ansible_runner==2.3.3",
+	"PyYAML>=6.0",
+]
