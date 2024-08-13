@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "playbill"
+name = "ansible-playbill"
 authors = [
 	{name = "Diego Fernando Carrión", email = "diegoc@comet.com"},
 ]
@@ -21,5 +21,6 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
 	"ansible_runner==2.3.3",
+	"ansible>=7.3.3",
 	"PyYAML>=6.0",
 ]
