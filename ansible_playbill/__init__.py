@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-"""Ansible Runner."""
+"""ansible_playbill"""
 # -*- coding: utf-8 -*-
 
 import threading
 import time
 import os
+import sys
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Union, TypeAlias, Optional
@@ -46,7 +46,7 @@ class AnsibleRunner:
         playbooks: List[PlaybookConfig] = [],
         debug: bool = False,
         log_prefix: str = "/tmp",
-        ansible_bin_path: Optional[str] = None,
+        ansible_bin_path: Optional[str] = os.path.join(sys.prefix, 'bin'),
     ):
         """Constructor.
 
