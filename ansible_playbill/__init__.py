@@ -1,3 +1,4 @@
+# pylint: disable-all
 """ansible_playbill"""
 # -*- coding: utf-8 -*-
 
@@ -7,7 +8,7 @@ import os
 import sys
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Union, TypeAlias, Optional
+from typing import Dict, List, Union, Optional
 
 import ansible_runner
 import yaml
@@ -15,9 +16,19 @@ import yaml
 # We first define a type variable YAMLTypes so that we can use it recursively
 # in the definition of the Union below. We then define the Union of all the
 # types that can be used in YAML.
-YAMLTypes: TypeAlias = Union[
-    str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
-]
+if sys.version_info >= (3, 12):
+    type YAMLTypes = Union[  # noqa: E999
+        str, int, float, bool, None, Dict[str, YAMLTypes], List[YAMLTypes]
+    ]
+elif sys.version_info >= (3, 10):
+    from typing import TypeAlias
+    YAMLTypes: TypeAlias = Union[
+        str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
+    ]
+else:
+    YAMLTypes = Union[
+        str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
+    ]
 
 
 class AnsibleRunnerException(Exception):
