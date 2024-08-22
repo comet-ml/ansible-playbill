@@ -16,19 +16,9 @@ import yaml
 # We first define a type variable YAMLTypes so that we can use it recursively
 # in the definition of the Union below. We then define the Union of all the
 # types that can be used in YAML.
-if sys.version_info >= (3, 12):
-    type YAMLTypes = Union[  # noqa: E999
-        str, int, float, bool, None, Dict[str, YAMLTypes], List[YAMLTypes]
-    ]
-elif sys.version_info >= (3, 10):
-    from typing import TypeAlias
-    YAMLTypes: TypeAlias = Union[
-        str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
-    ]
-else:
-    YAMLTypes = Union[
-        str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
-    ]
+YAMLTypes = Union[
+    str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
+]
 
 
 class AnsibleRunnerException(Exception):
@@ -39,7 +29,7 @@ class AnsibleRunnerException(Exception):
 class PlaybookConfig:
     """PlaybookConfig."""
 
-    playbook_paths: str | List[str]
+    playbook_paths: Union[str, List[str]]
     extra_var_files: List[str] = field(default_factory=list)
     extra_vars: Dict[str, YAMLTypes] = field(default_factory=dict)
 
