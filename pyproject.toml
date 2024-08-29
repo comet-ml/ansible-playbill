@@ -35,5 +35,8 @@ dev = [
 	"pylint",
 ]
 
+[tool.setuptools.package-data]
+"*" = ["**/py.typed"]
+
 [tool.mypy]
 enable_incomplete_feature = "NewGenericSyntax"
