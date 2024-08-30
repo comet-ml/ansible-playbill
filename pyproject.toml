@@ -1,9 +1,13 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = [
+	"setuptools",
+	"wheel",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ansible-playbill"
+license = {"text" = "Apache License 2.0"}
 authors = [
 	{name = "Diego Fernando Carrión", email = "diegoc@comet.com"},
 ]
@@ -11,16 +15,30 @@ maintainers = [
 	{name = "Comet Deployment Team", email = "deployment-team@comet.com"},
 ]
 description = "A library for invoking ansible playbook runs from withing python programs."
-requires-python = ">=3.6"
+requires-python = ">=3.8.1,<4.0"
 keywords = ["ansible", "playbook", "automation"]
 classifiers = [
 	"Development Status :: 5 - Production/Stable",
+ 	"License :: OSI Approved :: Apache Software License",
 	"Intended Audience :: Developers",
 	"Operating System :: OS Independent",
 ]
 dynamic = ["version"]
 dependencies = [
 	"ansible_runner==2.3.3",
-	"ansible>=7.3.3",
+	"ansible>=6.7",
 	"PyYAML>=6.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+	"mypy",
+	"flake8",
+	"pylint",
+]
+
+[tool.setuptools.package-data]
+"*" = ["**/py.typed"]
+
+[tool.mypy]
+enable_incomplete_feature = "NewGenericSyntax"

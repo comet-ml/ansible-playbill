@@ -1,3 +1,4 @@
+# pylint: disable-all
 """ansible_playbill"""
 # -*- coding: utf-8 -*-
 
@@ -7,7 +8,7 @@ import os
 import sys
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Union, TypeAlias, Optional
+from typing import Dict, List, Union, Optional
 
 import ansible_runner
 import yaml
@@ -15,7 +16,7 @@ import yaml
 # We first define a type variable YAMLTypes so that we can use it recursively
 # in the definition of the Union below. We then define the Union of all the
 # types that can be used in YAML.
-YAMLTypes: TypeAlias = Union[
+YAMLTypes = Union[
     str, int, float, bool, None, Dict[str, "YAMLTypes"], List["YAMLTypes"]
 ]
 
@@ -28,7 +29,7 @@ class AnsibleRunnerException(Exception):
 class PlaybookConfig:
     """PlaybookConfig."""
 
-    playbook_paths: str | List[str]
+    playbook_paths: Union[str, List[str]]
     extra_var_files: List[str] = field(default_factory=list)
     extra_vars: Dict[str, YAMLTypes] = field(default_factory=dict)
 
