@@ -1,0 +1,45 @@
+name: "Build and Publish"
+run-name: "Build ${{ github.ref_name }} by @${{ github.actor }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        required: true
+        description: Version
+        
+jobs:
+    build-and-publish:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v4.1.1
+          with: 
+            submodules: true
+            fetch-tags: true
+
+        - name: Set up Python 3.9
+          uses: actions/setup-python@v3
+          with:
+                python-version: 3.9
+
+        - name: Build pip package
+          run: |
+                pip3 install -U pip build
+                export VERSION="${{inputs.version}}"
+                python3 -m build --sdist --wheel --outdir dist/ .
+
+        - name: Create git tag
+          run: |
+            set -x
+            git config --local user.email "github-actions@comet.com"
+            git config --local user.name "github-actions"
+            git tag ${{inputs.version}}
+            git push --no-verify origin ${{inputs.version}}
+                
+        - name: Publish package distributions to PyPI
+          uses: pypa/gh-action-pypi-publish@v1.9.0
+          with:
+            password: ${{ secrets.PYPI_API_TOKEN }}
+            packages-dir: dist

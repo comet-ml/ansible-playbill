@@ -23,7 +23,7 @@ classifiers = [
 	"Intended Audience :: Developers",
 	"Operating System :: OS Independent",
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 dependencies = [
 	"ansible_runner==2.3.3",
 	"ansible>=6.7",
