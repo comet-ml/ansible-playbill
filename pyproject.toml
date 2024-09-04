@@ -35,3 +35,9 @@ dependencies = [
 
 [tool.mypy]
 enable_incomplete_feature = "NewGenericSyntax"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+pythonpath = "."
