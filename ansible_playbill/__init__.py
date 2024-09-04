@@ -8,7 +8,7 @@ import os
 import sys
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Callable, Iterable
 
 import ansible_runner
 import yaml
@@ -48,6 +48,7 @@ class AnsibleRunner:
         debug: bool = False,
         log_prefix: str = "/tmp",
         ansible_bin_path: Optional[str] = os.path.join(sys.prefix, 'bin'),
+        event_handler: Optional[Callable[[dict], bool]] = None,
     ):
         """Constructor.
 
@@ -60,6 +61,7 @@ class AnsibleRunner:
             debug (bool): debug
             log_prefix (str): log_prefix
             ansible_bin_path (Optional[str]): ansible_bin_path
+            event_handler (Optional[Callable[[dict], bool]]): event_handler
         """
         self.playbook_root = playbook_root
         self.global_vars_files = global_vars_files
@@ -68,20 +70,14 @@ class AnsibleRunner:
         self.debug = debug
         self.log_prefix = log_prefix
         self.ansible_bin_path = ansible_bin_path
-
-    @classmethod
-    def print_event(cls, event: dict) -> bool:
-        """print_event.
-
-        Args:
-            cls:
-            event:
-
-        Returns:
-            bool:
-        """
-        print(event.get("stdout"))
-        return True
+        self.__events: Optional[Iterable[dict]] = None
+        self.__task_count: int = 0
+        self.__tasks_completed: Optional[int] = None
+        if event_handler is None:
+            self.__tasks_completed = 0
+            self.event_handler = self.get_default_event_handler()
+        else:
+            self.event_handler = event_handler
 
     def _parse_vars_file(self, path: str) -> Dict[str, YAMLTypes]:
         """_parse_vars_file.
@@ -131,6 +127,21 @@ class AnsibleRunner:
             extra_vars=extra_vars,
             extra_var_files=[],
         )
+
+    @classmethod
+    def get_default_event_handler(cls) -> Callable[[dict], bool]:
+        """get_default_event_handler.
+
+        Args:
+            self:
+
+        Returns:
+            Callable[[dict], bool]:
+        """
+        def default_event_handler(event: dict) -> bool:
+            print(event)
+            return True
+        return default_event_handler
 
     def run(
         self,
@@ -186,6 +197,7 @@ class AnsibleRunner:
                 # tries to do. We want to use the environment variables as is.
                 run_conf.env = os.environ.copy()
                 runner = ansible_runner.Runner(config=run_conf)
+                self.__events = runner.events
                 runner.run()
             except Exception as ex:
                 raise AnsibleRunnerException("Failed to run ansible") from ex
