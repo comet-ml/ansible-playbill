@@ -30,13 +30,6 @@ dependencies = [
 	"PyYAML>=6.0",
 ]
 
-[project.optional-dependencies]
-dev = [
-	"mypy",
-	"flake8",
-	"pylint",
-]
-
 [tool.setuptools.package-data]
 "*" = ["**/py.typed"]
 

@@ -1,0 +1,13 @@
+---
+- name: Twenty Nine
+  debug:
+    msg: "Twenty Nine"
+- name: Thirty
+  debug:
+    msg: "Thirty"
+- name: Thirty One
+  debug:
+    msg: "Thirty One"
+- name: Thirty Two
+  debug:
+    msg: "{{ thirtytwo }}"

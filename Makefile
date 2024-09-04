@@ -5,3 +5,6 @@ clean-pkg:
 .PHONY: clean
 clean: clean-pkg
 
+.PHONY: dev-deps
+dev-deps:
+	@pip install -r requirements-dev.txt
