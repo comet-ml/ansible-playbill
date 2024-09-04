@@ -8,7 +8,7 @@ import os
 import sys
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Callable, Iterable
 
 import ansible_runner
 import yaml
@@ -48,6 +48,7 @@ class AnsibleRunner:
         debug: bool = False,
         log_prefix: str = "/tmp",
         ansible_bin_path: Optional[str] = os.path.join(sys.prefix, 'bin'),
+        event_handler: Optional[Callable[[dict], bool]] = None,
     ):
         """Constructor.
 
@@ -60,6 +61,7 @@ class AnsibleRunner:
             debug (bool): debug
             log_prefix (str): log_prefix
             ansible_bin_path (Optional[str]): ansible_bin_path
+            event_handler (Optional[Callable[[dict], bool]]): event_handler
         """
         self.playbook_root = playbook_root
         self.global_vars_files = global_vars_files
@@ -68,20 +70,12 @@ class AnsibleRunner:
         self.debug = debug
         self.log_prefix = log_prefix
         self.ansible_bin_path = ansible_bin_path
-
-    @classmethod
-    def print_event(cls, event: dict) -> bool:
-        """print_event.
-
-        Args:
-            cls:
-            event:
-
-        Returns:
-            bool:
-        """
-        print(event.get("stdout"))
-        return True
+        self.__events: List[Iterable[dict]] = []
+        self.__tasks_processed: int = 0
+        if event_handler is None:
+            self.event_handler = self.get_default_event_handler()
+        else:
+            self.event_handler = event_handler
 
     def _parse_vars_file(self, path: str) -> Dict[str, YAMLTypes]:
         """_parse_vars_file.
@@ -132,6 +126,53 @@ class AnsibleRunner:
             extra_var_files=[],
         )
 
+    def get_default_event_handler(self) -> Callable[[dict], bool]:
+        """get_default_event_handler.
+
+        Args:
+            self:
+
+        Returns:
+            Callable[[dict], bool]:
+        """
+        def default_event_handler(event: dict) -> bool:
+            if event.get("stdout", "").startswith("TASK"):
+                self.__tasks_processed += 1
+            return True
+        return default_event_handler
+
+    @property
+    def events(self) -> Iterable[dict]:
+        """events.
+
+        Args:
+            self:
+
+        Returns:
+            Iterable[dict]:
+        """
+        while len(self.__events) == 0:
+            if not self.__runner_lock.locked():
+                raise AnsibleRunnerException(
+                    "No events available yet. Run a playbook first."
+                )
+            continue
+        for run_events in self.__events:
+            for event in run_events:
+                yield event
+
+    @property
+    def tasks_processed(self) -> int:
+        """tasks_processed.
+
+        Args:
+            self:
+
+        Returns:
+            int:
+        """
+        return self.__tasks_processed
+
     def run(
         self,
         playbook: PlaybookConfig,
@@ -153,16 +194,17 @@ class AnsibleRunner:
             AnsibleRunnerException: If unable to run ansible or and ansible
                 run fails.
         """
-        if collate_playbook_config:
-            playbook = self._collate_playbook_confg(playbook)
         if self.__runner_lock.locked():
             raise AnsibleRunnerException("Ansible runner is already running")
 
         with self.__runner_lock:
+            if collate_playbook_config:
+                playbook = self._collate_playbook_confg(playbook)
+
             now = time.strftime("%Y%m%d-%H%M%S")
             os.environ[
                 "ANSIBLE_LOG_PATH"
-            ] = f"{self.log_prefix}/ansible-runner-{now}.log"
+            ] = os.path.join(self.log_prefix, f"ansible-runner-{now}.log")
 
             quiet: bool = False
             if not self.debug:
@@ -185,7 +227,11 @@ class AnsibleRunner:
                 # Reset the environment variables magic that ansible_runner
                 # tries to do. We want to use the environment variables as is.
                 run_conf.env = os.environ.copy()
-                runner = ansible_runner.Runner(config=run_conf)
+                runner = ansible_runner.Runner(
+                    config=run_conf,
+                    event_handler=self.event_handler,
+                )
+                self.__events.append(runner.events)
                 runner.run()
             except Exception as ex:
                 raise AnsibleRunnerException("Failed to run ansible") from ex
@@ -201,6 +247,7 @@ class AnsibleRunner:
         Returns:
             None:
         """
+        self.__tasks_processed = 0
         for playbook in self.playbooks:
             # When running multiple playbook runs, we want to collate all
             # the configs prior to performing the runs to fail fast if any

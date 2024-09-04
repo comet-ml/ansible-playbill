@@ -1,0 +1,31 @@
+---
+- name: One
+  debug:
+    msg: "One"
+- name: Two
+  debug:
+    msg: "Two"
+- name: Three
+  debug:
+    msg: "Three"
+- name: Four
+  debug:
+    msg: "Four"
+- name: Alt One
+  ansible.builtin.include_tasks: alt_one.yml
+  when: false
+- name: Alt Two
+  ansible.builtin.include_tasks: alt_two.yml
+  when: true
+- name: Five
+  debug:
+    msg: "Five"
+- name: Six
+  debug:
+    msg: "Six"
+- name: Seven
+  debug:
+    msg: "Seven"
+- name: Eight
+  debug:
+    msg: "Eight"

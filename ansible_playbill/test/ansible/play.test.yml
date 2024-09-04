@@ -1,0 +1,8 @@
+---
+- name: Test Playbook
+  hosts: 127.0.0.1
+  connection: local
+  become: true
+  roles:
+    - role: test
+    - role: test_other
